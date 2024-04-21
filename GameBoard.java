@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 import static java.awt.Color.DARK_GRAY;
@@ -264,6 +265,14 @@ public class GameBoard extends JPanel implements KeyListener {
             g.setColor(Color.GRAY);
             g.fillOval(pebble.getX(), pebble.getY(), 5, 5);
         }
+        
+        for (StarMan playerX : players) {
+            for (Pebble pebble : playerX.getShootingPebble()) {
+                g.setColor(Color.WHITE);
+                g.fillOval(pebble.getX(), pebble.getY(), 5, 5);
+                pebble.updatePosition();
+            }
+
 
         // Draw all fruits
         for (Fruit fruit : fruits) {
@@ -307,6 +316,14 @@ public class GameBoard extends JPanel implements KeyListener {
         g.setColor(Color.RED);
         for (LavaBlock lavaBlock : lavaBlocks) {
             g.fillRect(lavaBlock.getX(), lavaBlock.getY(), 20, 20);  // Size of the lava block
+        }
+    }
+
+     public void updatePebbles() {
+        for (StarMan player : players) {
+            for (Pebble pebble : player.getShootingPebble()) {
+                pebble.updatePosition();
+            }
         }
     }
 
