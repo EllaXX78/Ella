@@ -209,7 +209,7 @@ public class GameBoard extends JPanel implements KeyListener {
 
     private void checkRocketBlockInteraction(StarMan player) {
         for (RocketBlock block : rocketBlocks) {
-            if (player.getX() == block.getX() && player.getY() == block.getY()) {
+            if (player.getX() >= block.getX() && player.getX()<= block.getX()+20 && player.getY() >= block.getY() && player.getY() <= block.getY()+20) ) {
                 int newX, newY;
                 do {
                     newX = rand.nextInt(800);
