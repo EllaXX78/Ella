@@ -326,6 +326,24 @@ public class GameBoard extends JPanel implements KeyListener {
             }
         }
     }
+        
+    public void hitGhost(ArrayList<Pebble> pebbles) {
+        Iterator<Pebble> pebbleIterator = pebbles.iterator();
+        while (pebbleIterator.hasNext()) {
+            Pebble pebble = pebbleIterator.next();
+            Iterator<Ghost> ghostIterator = ghosts.iterator();
+            while (ghostIterator.hasNext()) {
+                Ghost ghost = ghostIterator.next();
+                if (Math.abs(ghost.getX() - pebble.getX()) <= 15 && Math.abs(ghost.getY() - pebble.getY()) <= 15) {
+                    ghost.hitByPebble();
+                    pebbleIterator.remove();
+                    if (!ghost.isAlive()) {
+                        ghostIterator.remove();
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {}
