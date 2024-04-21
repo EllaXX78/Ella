@@ -1,0 +1,28 @@
+
+public class Flower {
+    private int x, y;
+    private boolean DarkMode;
+
+    public Flower(int x, int y) {
+        this.x = x;
+        this.y = y;
+        this.DarkMode = false;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public boolean getMode() {
+        return DarkMode;
+    }
+    
+    public void onFlower(Flower flower) {
+       DarkMode = true;
+    }
+}
+
