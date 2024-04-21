@@ -8,6 +8,7 @@ public class StarMan {
     private int health; // Health points of StarMan
     private int pebbleCount; // Number of pebbles StarMan can shoot
     private static final int MAX_SIZE = 5; // Size of the StarMan
+    private List<Pebble> shootingPebbles;
 
     public Polygon getStarShape(int x, int y, int size) {
         int[] xPoints = new int[10];
@@ -29,6 +30,7 @@ public class StarMan {
         this.size = 1; // Initial size
         this.health = 3; // Initial health
         this.pebbleCount = 0; // Initial pebbles
+        this.shootingPebbles = new ArrayList<>();
     }
 
     // StarMan's movement methods
@@ -95,7 +97,8 @@ public class StarMan {
     public void shootPebble(ArrayList<Pebble> pebbles) {
         if (pebbleCount > 0) {
             int pebbleSpeed = 10; // Speed of the pebble
-            pebbles.add(new Pebble(x, y, pebbleSpeed, 0)); // Adding a new pebble at StarMan's position
+            Pebble newPebble = new Pebble(x, y, pebbleSpeed, 0);
+            pebbles.add(newPebble); // Adding a new pebble at StarMan's position
             pebbleCount--;
             size--; // Decrease size when shooting a pebble
         }
@@ -135,4 +138,7 @@ public class StarMan {
     public void setY(int y) { this.y = y; }
     public double getSize() { return size; }
     public int getHealth() { return health; }
+    public List<Pebble> getShootingPebble() {
+        return shootingPebbles;
+    }
 }
