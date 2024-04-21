@@ -79,7 +79,7 @@ public class StarMan {
         Iterator<Pebble> it = pebbles.iterator();
         while (it.hasNext()) {
             Pebble pebble = it.next();
-            if (Math.abs(x - pebble.getX()) <= size && Math.abs(y - pebble.getY()) <= size){
+            if (Math.abs(x - pebble.getX()) <= 15 && Math.abs(y - pebble.getY()) <= 15){
                 it.remove();
                 size += 0.5;
                 pebbleCount++;
