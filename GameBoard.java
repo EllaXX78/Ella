@@ -25,9 +25,11 @@ public class GameBoard extends JPanel implements KeyListener {
     private int cols;
     private int rows;
     private Set<Integer> pressedKeys = new HashSet<>();
+    private boolean isSinglePlayer;
 
 
     public GameBoard(boolean isSinglePlayer) {
+	this.isSinglePlayer = isSinglePlayer;
         setFocusable(true);
         addKeyListener(this);
         rows = getHeight() / 20;  // Each cell is 20x20 pixels
@@ -37,7 +39,7 @@ public class GameBoard extends JPanel implements KeyListener {
     }
 
     private boolean isPositionOccupied(int x, int y, ArrayList<RocketBlock> rocketBlocks, ArrayList<LavaBlock> lavaBlocks, ArrayList<Wall> walls) {
-        int blockSize = 20; // Assuming each block has a size of 20x20
+        int blockSize = 20; 
 
         // Check against Rocket Blocks
         for (RocketBlock block : rocketBlocks) {
@@ -126,7 +128,7 @@ public class GameBoard extends JPanel implements KeyListener {
         walls = new ArrayList<>();
         rocketBlocks = new ArrayList<>();
         lavaBlocks = new ArrayList<>();
-            	pressedKeys = new HashSet<>();
+        pressedKeys = new HashSet<>();
 
         generateWalls();
 
@@ -148,8 +150,8 @@ public class GameBoard extends JPanel implements KeyListener {
         for (int i = 0; i < numberOfGhosts; i++) {
             int ghostX, ghostY;
             do {
-                ghostX = rand.nextInt(800);
-                ghostY = rand.nextInt(600);
+                ghostX = rand.nextInt(400)+100;
+                ghostY = rand.nextInt(300)+100;
             } while (collidesWithWall(ghostX, ghostY, walls));
             ghosts.add(new Ghost(ghostX, ghostY));
         }
@@ -184,8 +186,51 @@ public class GameBoard extends JPanel implements KeyListener {
         for (int y = 0; y < gameHeight; y += wallHeight) {
             walls.add(new Wall(0, y)); // Left border
             walls.add(new Wall(gameWidth - wallWidth, y)); // Right border
+
+        }
+
+        // Generate inner walls
+        boolean[][] wallPattern = {
+                {false, true, false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, true, false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, true, true, false, false, true, true, false, false, false, true, false, false, false, false, true, true, true, true, false, false, true, true, false, false, false, false, false, true, true, true, true, false, false, false},
+                {false, false, false, true, true, true, false, false, false, false, false, false, false, true, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, true, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, true, false, false, false, false, false, false, false, false, false},
+                {false, false, false, true, true, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, true, true},
+                {false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, true, false, false, true, true, true, false, false, false, false, false, true, true, false, false, false, false, true, false, false, true, true, true, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, true, false, false, false, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, false, false, true, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, false, false, true, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, true, true, true, false, false, false, true, false, false, true, true, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true},
+                {false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false, true, true},
+                {false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false},
+                {false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, true, true},
+                {false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, true, true, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, true, false, false, false, false, false, false, false, true, true, true, true, true, false, false, true, false, false, false, false, false, true, false, false, false, false, true, true, true, false, false, true, true, true, true, true},
+                {false, false, false, false, false, false, false, false, false, false, true, true, false, false, true, false, false, true, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false},
+                {false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+        };
+
+        for (int y = 0; y < wallPattern.length; y++) {
+            for (int x = 0; x < wallPattern[y].length; x++) {
+                if (wallPattern[y][x]) {
+                    walls.add(new Wall(x * wallWidth, y * wallHeight));
+                }
+            }
         }
     }
+	
     public void generatePebbles(int boardWidth, int boardHeight) {
         int[][] map = {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -230,9 +275,12 @@ public class GameBoard extends JPanel implements KeyListener {
     }
 
     private void checkLavaBlockInteraction(StarMan player) {
+        Rectangle playerRect = new Rectangle(player.getX(), player.getY(), (int)player.getSize(), (int)player.getSize());
         for (LavaBlock block : lavaBlocks) {
-            if ((player.getX() == block.getX()) && (player.getY() == block.getY())) {
-                player.decreaseHealth();
+            Rectangle lavaBlockRect = new Rectangle(block.getX(), block.getY(), 20, 20);
+            if (playerRect.intersects(lavaBlockRect)) {
+                JFrame gameFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                new EndScreen(gameFrame, isSinglePlayer);
                 break;
             }
         }
@@ -243,8 +291,8 @@ public class GameBoard extends JPanel implements KeyListener {
         for (Ghost ghost : ghosts) {
             Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 20, 20); // Assuming the size of the ghost is 20
             if (playerRect.intersects(ghostRect)) {
-
-                new EndScreen(); // Pass the game frame to the end screen
+		JFrame gameFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                new EndScreen(gameFrame, isSinglePlayer);
                 break;
             }
         }
@@ -339,9 +387,16 @@ public class GameBoard extends JPanel implements KeyListener {
         }
 
         // Draw lava blocks
-        g.setColor(Color.RED);
-        for (LavaBlock lavaBlock : lavaBlocks) {
-            g.fillRect(lavaBlock.getX(), lavaBlock.getY(), 20, 20);  // Size of the lava block
+       for (LavaBlock lavaBlock : lavaBlocks) {
+            g.setColor(Color.RED);
+            g.fillRect(lavaBlock.getX(), lavaBlock.getY(), 20, 20);// Size of the lava block
+            g.setColor(Color.ORANGE);
+            g.fillOval(lavaBlock.getX() + 5, lavaBlock.getY() + 5, 3, 3);
+            g.fillOval(lavaBlock.getX() + 10, lavaBlock.getY() + 5, 5, 5);
+            g.fillOval(lavaBlock.getX() + 3, lavaBlock.getY() + 15, 5, 5);
+            g.fillOval(lavaBlock.getX() + 7, lavaBlock.getY() + 12, 3, 3);
+            g.fillOval(lavaBlock.getX() + 12, lavaBlock.getY() + 15, 5, 5);
+
         }
     }
 
