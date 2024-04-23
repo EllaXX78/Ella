@@ -26,6 +26,7 @@ public class GameBoard extends JPanel implements KeyListener {
     private int rows;
     private Set<Integer> pressedKeys = new HashSet<>();
     private boolean isSinglePlayer;
+    private Camera camera;
 
 
     public GameBoard(boolean isSinglePlayer) {
@@ -129,6 +130,7 @@ public class GameBoard extends JPanel implements KeyListener {
         rocketBlocks = new ArrayList<>();
         lavaBlocks = new ArrayList<>();
         pressedKeys = new HashSet<>();
+	camera = new Camera(0, 0, 200, 150);
 
         generateWalls();
 
@@ -300,6 +302,9 @@ public class GameBoard extends JPanel implements KeyListener {
 
     public void startGame() {
         new Timer(100, e -> {
+
+	camera.update(players.get(0));
+		
             for (Ghost ghost : ghosts) {
                 ghost.moveRandomly(walls);
             }
@@ -326,6 +331,9 @@ public class GameBoard extends JPanel implements KeyListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         setBackground(Color.BLACK);
+	    
+        camera.applyGraphicsTransformations(g);
+	    
         // Draw all pebbles
         for (Pebble pebble : pebbles) {
             g.setColor(Color.GRAY);
@@ -480,6 +488,7 @@ public class GameBoard extends JPanel implements KeyListener {
     public void actionPerformed(ActionEvent e) {
         hitGhost(pebbles);
         updateShootingPebbles();
+	camera.update(players.get(0));
         repaint();
     }
 
@@ -522,6 +531,7 @@ public class GameBoard extends JPanel implements KeyListener {
 		} else if (down) {
 			players.get(0).moveDown(walls);
 		}
+	    camera.update(players.get(0));
 
         // Shooting pebbles
         if (key == KeyEvent.VK_SPACE) {
