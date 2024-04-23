@@ -17,14 +17,28 @@ public class EndScreen extends JFrame {
         setVisible(true);
     }
 
-    private void restartGame() {
+    private void startGame(boolean isSinglePlayer) {
         this.dispose();
+        gameFrame.dispose();
+        JFrame frame = new JFrame("Star Man - A Journey through the Galaxy");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 620);
+        frame.add(new GameBoard(isSinglePlayer));
+        frame.setVisible(true);
+    }
+    private void restartGame() {
 
-        new StartScreen(); // Restart the game from the start screen
+            this.dispose();
+            gameFrame.dispose();
+            startGame(isSinglePlayer);// Restart the game from the start screen
+
     }
 
     private void returnHome() {
-        this.dispose();
-        new StartScreen(); // Return to start screen
+
+            this.dispose();
+            gameFrame.dispose();
+            new StartScreen(); // Return to start screen
+
     }
 }
