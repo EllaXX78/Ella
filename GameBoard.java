@@ -3,8 +3,12 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
+import java.awt.event.*;
 
 import static java.awt.Color.DARK_GRAY;
 
@@ -20,6 +24,7 @@ public class GameBoard extends JPanel implements KeyListener {
     private ArrayList<LavaBlock> lavaBlocks;
     private int cols;
     private int rows;
+    private Set<Integer> pressedKeys = new HashSet<>();
 
 
     public GameBoard(boolean isSinglePlayer) {
@@ -121,6 +126,7 @@ public class GameBoard extends JPanel implements KeyListener {
         walls = new ArrayList<>();
         rocketBlocks = new ArrayList<>();
         lavaBlocks = new ArrayList<>();
+            	pressedKeys = new HashSet<>();
 
         generateWalls();
 
@@ -252,6 +258,18 @@ public class GameBoard extends JPanel implements KeyListener {
             for (Pebble pebble : pebbles) {
                 pebble.updatePosition();
             }
+
+            for (StarMan player : players) {
+                hitGhost(player.getShootingPebble());
+            }
+            for (Ghost ghost : ghosts) {
+                ghost.updateBlink();  }
+            
+            for (Pebble pebble : pebbles) {
+                bouncePebble(pebble, walls);
+            }
+            
+            updatePebbles();
             repaint();
         }).start();
     }
@@ -270,7 +288,7 @@ public class GameBoard extends JPanel implements KeyListener {
             for (Pebble pebble : playerX.getShootingPebble()) {
                 g.setColor(Color.WHITE);
                 g.fillOval(pebble.getX(), pebble.getY(), 5, 5);
-                pebble.updatePosition();
+
             }
 
 
@@ -286,12 +304,20 @@ public class GameBoard extends JPanel implements KeyListener {
 
         // Draw all ghosts
         for (Ghost ghost : ghosts) {
+            if (ghost.isVisible()) {
+                if (ghost.isBlinking()) {
+                	g.setColor(Color.RED); 
+                    g.fillArc(ghost.getX(), ghost.getY(), 20, 20, 0, 180); // Top half of the ghost
+                    g.fillRect(ghost.getX(), ghost.getY() + 10, 20, 10); // Bottom half of the ghost
+                }else {
             g.setColor(Color.magenta);
             g.fillArc(ghost.getX(), ghost.getY(), 20, 20, 0, 180); // Top half of the ghost
             g.fillRect(ghost.getX(), ghost.getY() + 10, 20, 10); // Bottom half of the ghost
             g.setColor(Color.WHITE);
             g.fillOval(ghost.getX() + 5, ghost.getY() + 5, 5, 5); // Left eye
             g.fillOval(ghost.getX() + 10, ghost.getY() + 5, 5, 5); // Right eye
+        }
+            }
         }
 
         // Draw all players
@@ -327,22 +353,79 @@ public class GameBoard extends JPanel implements KeyListener {
         }
     }
         
-    public void hitGhost(ArrayList<Pebble> pebbles) {
-        Iterator<Pebble> pebbleIterator = pebbles.iterator();
+    public void hitGhost(List<Pebble> shootingPebbles) {
+        Iterator<Pebble> pebbleIterator = shootingPebbles.iterator();
         while (pebbleIterator.hasNext()) {
             Pebble pebble = pebbleIterator.next();
+    		Rectangle pebbleRect = new Rectangle(pebble.getX(), pebble.getY(), 5, 5); 
             Iterator<Ghost> ghostIterator = ghosts.iterator();
+            boolean hitDetected = false;
+            
             while (ghostIterator.hasNext()) {
                 Ghost ghost = ghostIterator.next();
-                if (Math.abs(ghost.getX() - pebble.getX()) <= 15 && Math.abs(ghost.getY() - pebble.getY()) <= 15) {
-                    ghost.hitByPebble();
-                    pebbleIterator.remove();
+                Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 40, 40);
+                
+                if(pebbleRect.intersects(ghostRect)) {
+                    ghost.hit();
+                    hitDetected = true;
                     if (!ghost.isAlive()) {
                         ghostIterator.remove();
                     }
+                    
                 }
+            }if(hitDetected) {
+            	pebbleIterator.remove();
             }
         }
+    }
+        public boolean pebblesCollidesWithWall(Pebble pebble, List<Wall> walls) {
+        Rectangle pebbleRect = new Rectangle(pebble.getX(), pebble.getY(), 5, 5);
+        for (Wall wall : walls) {
+            Rectangle wallRect = new Rectangle(wall.getX(), wall.getY(), 20, 20);
+            if (pebbleRect.intersects(wallRect)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+         public void bouncePebble(Pebble pebble, ArrayList<Wall> walls) {
+        if (pebblesCollidesWithWall(pebble, walls)) {
+            // Check which sides of the pebble the walls are on to determine how to bounce
+            int futureX = pebble.getX() + pebble.getVx();
+            int futureY = pebble.getY() + pebble.getVy();
+
+            // Check vertical walls
+            if (pebblesCollidesWithWall(new Pebble(futureX, pebble.getY(), pebble.getVx(), pebble.getVy()), walls)) {
+                pebble.setVx(-pebble.getVx()); // Reverse horizontal velocity
+            }
+
+            // Check horizontal walls (top or bottom collision)
+            if (pebblesCollidesWithWall(new Pebble(pebble.getX(), futureY, pebble.getVx(), pebble.getVy()), walls)) {
+                pebble.setVy(-pebble.getVy()); // Reverse vertical velocity
+            }
+        }
+    }
+
+        private void updateShootingPebbles() {
+        // Update positions of all shooting pebbles
+        for (StarMan player : players) {
+            Iterator<Pebble> it = player.getShootingPebble().iterator();
+            while (it.hasNext()) {
+                Pebble pebble = it.next();
+                pebble.updatePosition();
+                if (pebble.getX() > getWidth() || pebble.getX() < 0 || pebble.getY() > getHeight() || pebble.getY() < 0) {
+                    it.remove(); // Remove pebbles that go out of bounds
+                }
+                    bouncePebble(pebble, walls);
+            }
+        }
+    }
+    
+    public void actionPerformed(ActionEvent e) {
+        hitGhost(pebbles);
+        updateShootingPebbles();
+        repaint();
     }
 
     @Override
@@ -350,6 +433,7 @@ public class GameBoard extends JPanel implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        pressedKeys.add(e.getKeyCode());
         int key = e.getKeyCode();
         StarMan player1 = players.get(0);
         StarMan player2 = null; // Initialize player2 to null
@@ -357,21 +441,40 @@ public class GameBoard extends JPanel implements KeyListener {
             player2 = players.get(1);
         }
 
-        // Movement keys for player 1
-        if (key == KeyEvent.VK_LEFT) {
-            players.get(0).moveLeft(walls);
-        } else if (key == KeyEvent.VK_RIGHT) {
-            players.get(0).moveRight(walls);
-        } else if (key == KeyEvent.VK_UP) {
-            players.get(0).moveUp(walls);
-        } else if (key == KeyEvent.VK_DOWN) {
-            players.get(0).moveDown(walls);
-        }
+ boolean left = pressedKeys.contains(KeyEvent.VK_LEFT);
+        boolean right = pressedKeys.contains(KeyEvent.VK_RIGHT);
+        boolean up = pressedKeys.contains(KeyEvent.VK_UP);
+        boolean down = pressedKeys.contains(KeyEvent.VK_DOWN);
+
+		if (left && up) {
+			// Move left-down
+			players.get(0).moveLeftUp(walls);
+		} else if (left && down) {
+			// Move left-up
+			players.get(0).moveLeftDown(walls);
+		} else if (right && up) {
+			// Move right-down
+			players.get(0).moveRightUp(walls);
+		} else if (right && down) {
+			// Move right-up
+			players.get(0).moveRightDown(walls);
+		} else if (left) {
+			players.get(0).moveLeft(walls);
+		} else if (right) {
+			players.get(0).moveRight(walls);
+		} else if (up) {
+			players.get(0).moveUp(walls);
+		} else if (down) {
+			players.get(0).moveDown(walls);
+		}
 
         // Shooting pebbles
         if (key == KeyEvent.VK_SPACE) {
-            players.get(0).shootPebble(pebbles);
+        	if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+        		players.get(0).shootPebble(pebbles);
+        		hitGhost(pebbles);
         }
+        	}
 
         // Eating pebbles
         player1.eatPebble(pebbles);
@@ -422,7 +525,9 @@ public class GameBoard extends JPanel implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+                pressedKeys.remove(e.getKeyCode());
+    }
 
 
 }
