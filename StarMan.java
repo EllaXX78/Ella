@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 import java.awt.Polygon;
 
@@ -9,6 +10,8 @@ public class StarMan {
     private int pebbleCount; // Number of pebbles StarMan can shoot
     private static final int MAX_SIZE = 5; // Size of the StarMan
     private List<Pebble> shootingPebbles;
+    private int xD;
+    private int yD;
 
     public Polygon getStarShape(int x, int y, int size) {
         int[] xPoints = new int[10];
@@ -38,6 +41,8 @@ public class StarMan {
         int newX = x - 10;
         if (!collidesWithWall(newX, y, walls)) {
             x = newX;
+            xD = -10;
+            yD = 0;
         }
     }
 
@@ -45,6 +50,9 @@ public class StarMan {
         int newX = x + 10;
         if (!collidesWithWall(newX, y, walls)) {
             x = newX;
+            xD = 10;
+            yD = 0;
+           
         }
     }
 
@@ -52,6 +60,8 @@ public class StarMan {
         int newY = y - 10;
         if (!collidesWithWall(x, newY, walls)) {
             y = newY;
+            xD = 0;
+            yD = -10;
         }
     }
 
@@ -59,6 +69,53 @@ public class StarMan {
         int newY = y + 10;
         if (!collidesWithWall(x, newY, walls)) {
             y = newY;
+            xD = 0;
+            yD = 10;
+        }
+    }
+    
+    public void moveLeftUp(ArrayList<Wall> walls) {
+        int newX = x - 7;
+        int newY = y - 7;
+        if (!collidesWithWall(newX, newY, walls)) {
+        	x = newX;
+        	y = newY;
+        	xD = -7;
+        	yD = -7;
+        	
+        }
+    }
+
+    public void moveLeftDown(ArrayList<Wall> walls) {
+        int newX = x - 7;
+        int newY = y + 7;
+        if (!collidesWithWall(x, newY, walls)) {
+        	x = newX;
+        	y = newY;
+        	xD = -7;
+        	yD = 7;
+        }
+    }
+
+    public void moveRightUp(ArrayList<Wall> walls) {
+        int newX = x + 7;
+        int newY = y - 7;
+        if (!collidesWithWall(x, newY, walls)) {
+        	x = newX;
+        	y = newY;
+        	xD = 7;
+        	yD = -7;
+        }
+    }
+
+    public void moveRightDown(ArrayList<Wall> walls) {
+        int newX = x + 7;
+        int newY = y + 7;
+        if (!collidesWithWall(x, newY, walls)) {
+        	x = newX;
+        	y = newY;
+        	xD = 7;
+        	yD = 7;
         }
     }
 
@@ -100,7 +157,7 @@ public class StarMan {
             Pebble newPebble = new Pebble(x, y, pebbleSpeed, 0);
             pebbles.add(newPebble); // Adding a new pebble at StarMan's position
             pebbleCount--;
-            size--; // Decrease size when shooting a pebble
+            size = Math.max(1, size - 1); // Decrease size when shooting a pebble
         }
     }
 
@@ -141,4 +198,35 @@ public class StarMan {
     public List<Pebble> getShootingPebble() {
         return shootingPebbles;
     }
+    	public void setX(int x) {
+		this.x = x;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public double getSize() {
+		return size;
+	}
+
+	public int getHealth() {
+		return health;
+	}
+
+	public int getxD() {
+		return xD;
+	}
+
+	public int getyD() {
+		return yD;
+	}
+	
+	public void setxD(int xD) {
+		this.xD = xD;
+	}
+	
+	public void setyD(int yD) {
+		this.yD = yD;
+	}
 }
