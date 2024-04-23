@@ -1,0 +1,49 @@
+import java.awt.*;
+
+public class Camera {
+    private int x, y; // Camera position in the game world
+    private int width, height; // Dimensions of the camera viewport
+
+    public Camera(int x, int y, int width, int height) {
+    	this.x = x;
+    	this.y = y;
+    	this.width = width;
+    	this.height = height;
+    }
+    
+    public void update(StarMan player) {
+        // Center the camera on the target, clamping to bounds
+        x = player.getX() - (this.width / 2);
+        y = player.getY() - (this.height / 2);
+        CheckBounds();
+    }
+    
+    private void CheckBounds() {
+        if (x < 0) {
+        	x = 0;
+        }
+        if (y < 0) {
+        	y = 0;
+        }
+        if (x + width > 800) {
+        	x = 800 - width;
+        }
+        if (y + height > 600) {
+        	y = 600 - height;
+        }
+    }
+    
+    public void applyGraphicsTransformations(Graphics g) {
+        g.clipRect(x, y, width, height);
+        g.translate(-x, -y);
+    }
+    
+	public int getX() {
+		return x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+}
