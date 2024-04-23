@@ -2,7 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class EndScreen extends JFrame {
-    public EndScreen() {
+    private JFrame gameFrame;
+    private boolean isSinglePlayer;
+    
+    public EndScreen() 
+        this.gameFrame = gameFrame;
+        this.isSinglePlayer = isSinglePlayer;
         setTitle("Game Over");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
