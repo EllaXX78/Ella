@@ -21,4 +21,20 @@ public class Pebble {
         return y;
     }
 
+    	public int getVx() {
+		return vx;
+	}
+
+	public int getVy() {
+		return vy;
+	}
+	
+	public void setVx(int vx) {
+		this.vx = vx;
+	}
+	
+	public void setVy(int vy) {
+		this.vy = vy;
+	}
+
 }
