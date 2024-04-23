@@ -4,13 +4,49 @@ import java.util.Random;
 
 public class Ghost {
     private int x, y; // Position of the Ghost
-    private int hitPoints; // Hit points to track damage from pebbles
+    private int health; // Hit points to track damage from pebbles
     private static final Random rand = new Random();
+    private boolean isVisible ;
+    private boolean blinking;
+    private int blinkCount; // Counter to keep track of blink cycles
+    private int blinkDuration;
 
     public Ghost(int startX, int startY) {
         this.x = startX;
         this.y = startY;
-        this.hitPoints = 5; // Ghosts need to be hit with 5 pebbles to die
+        this.health = 3; // Ghosts need to be hit with 5 pebbles to die
+        this.blinkCount = 0;
+        this.isVisible = true;
+        this.blinking = false;
+        this.blinkDuration = 10;
+    }
+
+        public void hit() {
+        health--;
+        if (health > 0) {
+            startBlinking();
+        } else {
+            isVisible = false;  // Ghost dies
+        }
+        }
+    public void startBlinking() {
+        blinking = true;
+        blinkCount = blinkDuration; // Set blink count to 3
+    }
+    
+    public void updateBlinking() {
+        if (blinking) {
+            blinkCount--;
+            if (blinkCount <= 0) {
+                blinking = false;  // Stop blinking
+            }
+        }
+    }
+    
+    public void updateBlink() {
+        if (blinking) {
+            updateBlinking();
+        }
     }
 
     // Move the ghost in a random direction
@@ -74,4 +110,16 @@ public class Ghost {
     // Setters for position (might be needed for resetting or special effects)
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
+
+    	public int getHitPoints() {
+		return health;
+	}
+
+	public boolean isBlinking() {
+		return blinking;
+	}
+
+	public boolean isVisible() {
+		return isVisible;
+	}
 }
