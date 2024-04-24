@@ -159,7 +159,7 @@ public class GameBoard extends JPanel implements KeyListener {
         }
 
         // Generate initial pebbles and fruits
-        generatePebbles(getWidth(), getHeight());
+        generatePebbles();
         generateFruits();
         startGame();
     }
