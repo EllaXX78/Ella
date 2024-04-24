@@ -318,9 +318,6 @@ public class GameBoard extends JPanel implements KeyListener {
             for (Ghost ghost : ghosts) {
                 ghost.updateBlink();  }
             
-            for (Pebble pebble : pebbles) {
-                bouncePebble(pebble, walls);
-            }
             
             updatePebbles();
             repaint();
@@ -488,31 +485,32 @@ public class GameBoard extends JPanel implements KeyListener {
     public void actionPerformed(ActionEvent e) {
         hitGhost(pebbles);
         updateShootingPebbles();
-	camera.update(players.get(0));
+//	camera.update(players.get(0));
         repaint();
     }
+		@Override
+	public void keyTyped(KeyEvent e) {
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) {
+		pressedKeys.add(e.getKeyCode());
+		int key = e.getKeyCode();
+		StarMan player1 = players.get(0);
+		StarMan player2 = null; // Initialize player2 to null
+		if (players.size() > 1) {
+			player2 = players.get(1);
+		}
 
-    @Override
-    public void keyTyped(KeyEvent e) {}
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        pressedKeys.add(e.getKeyCode());
-        int key = e.getKeyCode();
-        StarMan player1 = players.get(0);
-        StarMan player2 = null; // Initialize player2 to null
-        if (players.size() > 1) {
-            player2 = players.get(1);
-        }
-
- boolean left = pressedKeys.contains(KeyEvent.VK_LEFT);
-        boolean right = pressedKeys.contains(KeyEvent.VK_RIGHT);
-        boolean up = pressedKeys.contains(KeyEvent.VK_UP);
-        boolean down = pressedKeys.contains(KeyEvent.VK_DOWN);
+		boolean left = pressedKeys.contains(KeyEvent.VK_LEFT);
+		boolean right = pressedKeys.contains(KeyEvent.VK_RIGHT);
+		boolean up = pressedKeys.contains(KeyEvent.VK_UP);
+		boolean down = pressedKeys.contains(KeyEvent.VK_DOWN);
 
 		if (left && up) {
 			// Move left-down
 			players.get(0).moveLeftUp(walls);
+			
 		} else if (left && down) {
 			// Move left-up
 			players.get(0).moveLeftDown(walls);
@@ -531,52 +529,75 @@ public class GameBoard extends JPanel implements KeyListener {
 		} else if (down) {
 			players.get(0).moveDown(walls);
 		}
-	    camera.update(players.get(0));
+		camera.update(players.get(0));
 
-        // Shooting pebbles
-        if (key == KeyEvent.VK_SPACE) {
-        	if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-        		players.get(0).shootPebble(pebbles);
-        		hitGhost(pebbles);
-        }
-        	}
+		// Shooting pebbles
+		if (key == KeyEvent.VK_SPACE) {
+			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+				players.get(0).shootPebble();
+				hitGhost(pebbles);
+				updateShootingPebbles();
+			}
+		}
 
-        // Eating pebbles
-        player1.eatPebble(pebbles);
-        if (player2 != null) {
-            player2.eatPebble(pebbles);
-        }
-        //check for collision with ghosts
-        checkCollisionWithGhosts(players.get(0));
-        if (players.size() > 1) {
-            checkCollisionWithGhosts(players.get(1));
-        }
+		// Eating pebbles
+		player1.eatPebble(pebbles);
+		if (player2 != null) {
+			player2.eatPebble(pebbles);
+		}
+		// check for collision with ghosts
+		if(PowerOn = false) {
+		checkCollisionWithGhosts(players.get(0));
+		if (players.size() > 1) {
+			checkCollisionWithGhosts(players.get(1));
+		}
+		}
 
-        // Eating fruits
-        player1.eatFruit(fruits);
-        if (player2 != null) {
-            player2.eatFruit(fruits);
-        }
+		// Eating fruits
+		player1.eatFruit(fruits);
+		if (player2 != null) {
+			player2.eatFruit(fruits);
+		}
+		
+		boolean left2 = pressedKeys.contains(KeyEvent.VK_A);
+		boolean right2 = pressedKeys.contains(KeyEvent.VK_D);
+		boolean up2 = pressedKeys.contains(KeyEvent.VK_W);
+		boolean down2 = pressedKeys.contains(KeyEvent.VK_S);
 
-        if (player2 != null) {    // Add controls for player 2 if in two player mode
-            switch (key) {
-                case KeyEvent.VK_A:
-                    player2.moveLeft(walls);
-                    break;
-                case KeyEvent.VK_D:
-                    player2.moveRight(walls);
-                    break;
-                case KeyEvent.VK_W:
-                    player2.moveUp(walls);
-                    break;
-                case KeyEvent.VK_S:
-                    player2.moveDown(walls);
-                    break;
-                case KeyEvent.VK_E:
-                    player2.shootPebble(pebbles);
-                    break;
-            }
-        }
+		if (player2 != null) { // Add controls for player 2 if in two player mode
+			if (left2 && up2) {
+				// Move left-down
+				players.get(1).moveLeftUp(walls);
+				
+			} else if (left2 && down2) {
+				// Move left-up
+				players.get(1).moveLeftDown(walls);
+			} else if (right2 && up2) {
+				// Move right-down
+				players.get(1).moveRightUp(walls);
+			} else if (right2 && down2) {
+				// Move right-up
+				players.get(1).moveRightDown(walls);
+			} else if (left2) {
+				players.get(1).moveLeft(walls);
+			} else if (right2) {
+				players.get(1).moveRight(walls);
+			} else if (up2) {
+				players.get(1).moveUp(walls);
+			} else if (down2) {
+				players.get(1).moveDown(walls);
+			}
+			camera.update(players.get(0));
+			
+			if (key == KeyEvent.VK_E) {
+				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+					players.get(1).shootPebble();
+					hitGhost(pebbles);
+					updateShootingPebbles();
+				}
+			}
+			
+		}
 
         checkRocketBlockInteraction(player1);
         checkLavaBlockInteraction(player1);
