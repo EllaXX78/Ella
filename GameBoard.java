@@ -233,24 +233,46 @@ public class GameBoard extends JPanel implements KeyListener {
         }
     }
 	
-    public void generatePebbles(int boardWidth, int boardHeight) {
-        int[][] map = {
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                {1, 0, 1, 1, 1, 1, 1, 1, 0, 1},
-                {1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
-                {1, 0, 1, 0, 1, 1, 0, 1, 0, 1},
-                {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+    public void generatePebbles() {
+        int wallWidth = 20;
+        int wallHeight = 20;
+
+        boolean[][] wallPattern = {
+                {false, true, false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, true, false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, true, true, false, false, true, true, false, false, false, true, false, false, false, false, true, true, true, true, false, false, true, true, false, false, false, false, false, true, true, true, true, false, false, false},
+                {false, false, false, true, true, true, false, false, false, false, false, false, false, true, true, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, true, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, true, false, false, false, false, false, false, false, false, false},
+                {false, false, false, true, true, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, true, true, true},
+                {false, false, false, true, false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, true, false, false, true, true, true, false, false, false, false, false, true, true, false, false, false, false, true, false, false, true, true, true, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, true, false, false, false, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, false, false, true, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, false, false, true, false, false, false, true, false, false, false, false, false, false},
+                {false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, false, true, true, true, true, false, false, false, true, false, false, true, true, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, true, true, false, false, true, true, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true},
+                {false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false, true, true},
+                {false, false, false, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, true, false, false, true, false, false, true, false, false, true, true},
+                {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, true, false, false, true, false, false, false, false},
+                {false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, true, false, false, true, true, true, true, true},
+                {false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, true, true, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, true, false, false, false, false, false, false, false, true, true, true, true, true, false, false, true, false, false, false, false, false, true, false, false, false, false, true, true, true, false, false, true, true, true, true, true},
+                {false, false, false, false, false, false, false, false, false, false, true, true, false, false, true, false, false, true, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false},
+                {false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
         };
 
-        int wallWidth = boardWidth / map[0].length;
-        int wallHeight = boardHeight / map.length;
-
-        for (int i = 0; i < map.length; i++) {
-            for (int j = 0; j < map[i].length; j++) {
-                if (map[i][j] == 0) {
-                    pebbles.add(new Pebble(j * wallWidth + wallWidth / 2, i * wallHeight + wallHeight / 2, 0, 0));
+        for (int y = 0; y < wallPattern.length; y+=2) {
+            for (int x = 0; x < wallPattern[y].length; x+=2) {
+                if (!wallPattern[y][x]) {
+                    pebbles.add(new Pebble(x * (wallWidth) + 7 , y * (wallHeight)+ 7, 0, 0));
                 }
             }
         }
