@@ -279,8 +279,26 @@ public class GameBoard extends JPanel implements KeyListener {
     }
 
     private void generateFruits() {
-        fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Strawberry"));
-        fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Blueberry"));
+        int minX = 20;
+        int maxX = 780;
+        int minY = 10;
+        int maxY = 780;
+
+
+        int numFruits = rand.nextInt(10) + 2;
+
+        for (int i = 0; i < numFruits; i++) {
+            int x = rand.nextInt(maxX - minX + 1) + minX;
+            int y = rand.nextInt(maxY - minY + 1) + minY;
+
+            // ensure that the rocket block position does not overlap with existing blocks
+            if (!isPositionOccupied(x, y, rocketBlocks, lavaBlocks, walls)) {
+                fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Strawberry"));
+                fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Blueberry"));
+            } else {
+                i--; 
+            }
+        }
     }
 
     private void checkRocketBlockInteraction(StarMan player) {
