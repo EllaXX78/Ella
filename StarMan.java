@@ -151,11 +151,10 @@ public class StarMan {
     }
 
     // Shooting pebbles
-    public void shootPebble(ArrayList<Pebble> pebbles) {
+    public void shootPebble() {
         if (pebbleCount > 0) {
-            int pebbleSpeed = 10; // Speed of the pebble
-            Pebble newPebble = new Pebble(x, y, pebbleSpeed, 0);
-            pebbles.add(newPebble); // Adding a new pebble at StarMan's position
+          Pebble newPebble = new Pebble(x, y, xD, yD);
+            shootingPebbles.add(newPebble); // Adding a new pebble at StarMan's position
             pebbleCount--;
             size = Math.max(1, size - 1); // Decrease size when shooting a pebble
         }
