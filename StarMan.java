@@ -12,6 +12,7 @@ public class StarMan {
     private List<Pebble> shootingPebbles;
     private int xD;
     private int yD;
+    private boolean IfEat;
 
     public Polygon getStarShape(int x, int y, int size) {
         int[] xPoints = new int[10];
@@ -34,6 +35,7 @@ public class StarMan {
         this.health = 3; // Initial health
         this.pebbleCount = 0; // Initial pebbles
         this.shootingPebbles = new ArrayList<>();
+	this.IfEat = false;
     }
 
     // StarMan's movement methods
@@ -142,12 +144,15 @@ public class StarMan {
                 it.remove();
                 size += 0.5;
                 pebbleCount++;
+		IfEat = true;
                 if (size > MAX_SIZE) {
                     size = MAX_SIZE;
                 }
                 break;
-            }
+            }else {
+            	IfEat = false;
         }
+    }
     }
 
     // Shooting pebbles
@@ -227,5 +232,8 @@ public class StarMan {
 	
 	public void setyD(int yD) {
 		this.yD = yD;
+	}
+		public boolean getIfEat() {
+		return IfEat;
 	}
 }
