@@ -26,7 +26,11 @@ public class GameBoard extends JPanel implements KeyListener {
     private int rows;
     private Set<Integer> pressedKeys = new HashSet<>();
     private boolean isSinglePlayer;
-    private Camera camera;
+    private Camera camera1;
+    private Camera camera2;
+    private boolean PowerOn;
+    private int TotalPoints;
+    private JLabel scoreLabel;
 
 
     public GameBoard(boolean isSinglePlayer) {
@@ -35,6 +39,11 @@ public class GameBoard extends JPanel implements KeyListener {
         addKeyListener(this);
         rows = getHeight() / 20;  // Each cell is 20x20 pixels
         cols = getWidth() / 20;
+
+	    scoreLabel = new JLabel("Score: 0");
+	    scoreLabel.setForeground(Color.WHITE); // Set the text color
+	    scoreLabel.setFont(new Font("Serif", Font.BOLD, 18)); // Set the font style and size
+	    add(scoreLabel); // Add the label to the panel
 
         SwingUtilities.invokeLater(() -> initializeDimensions(isSinglePlayer));
     }
@@ -130,7 +139,10 @@ public class GameBoard extends JPanel implements KeyListener {
         rocketBlocks = new ArrayList<>();
         lavaBlocks = new ArrayList<>();
         pressedKeys = new HashSet<>();
-	camera = new Camera(0, 0, 200, 150);
+	camera1 = new Camera(0, 0, 120, 120);
+	camera2 = new Camera(0, 0, 220, 120);
+	PowerOn = false;
+	TotalPoints = 0;
 
         generateWalls();
 
@@ -343,7 +355,8 @@ public class GameBoard extends JPanel implements KeyListener {
     public void startGame() {
         new Timer(100, e -> {
 
-	camera.update(players.get(0));
+			camera1.update(players.get(0));
+			camera2.update(players.get(1));
 		
             for (Ghost ghost : ghosts) {
                 ghost.moveRandomly(walls);
@@ -364,12 +377,22 @@ public class GameBoard extends JPanel implements KeyListener {
         }).start();
     }
 
+	    public void applyGraphicsTransformations(Graphics g, Camera camera1, Camera camera2) {
+		int unionX = Math.min(camera1.getX(), camera2.getX());
+		int unionY = Math.min(camera1.getY(), camera2.getY());
+		int unionWidth = Math.max(camera1.getX() + camera1.getWidth(), camera2.getX() + camera2.getWidth()) - unionX;
+		int unionHeight = Math.max(camera1.getY() + camera1.getHeight(), camera2.getY() + camera2.getHeight()) - unionY;
+		
+        g.clipRect(unionX, unionY, unionWidth, unionHeight);
+        g.translate(-(int)0.8*unionX, -(int)0.8*unionY);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         setBackground(Color.BLACK);
 	    
-        camera.applyGraphicsTransformations(g);
+		applyGraphicsTransformations(g,camera1,camera2);
 	    
         // Draw all pebbles
         for (Pebble pebble : pebbles) {
@@ -478,34 +501,50 @@ public class GameBoard extends JPanel implements KeyListener {
             }
         }
     }
-        public boolean pebblesCollidesWithWall(Pebble pebble, List<Wall> walls) {
-        Rectangle pebbleRect = new Rectangle(pebble.getX(), pebble.getY(), 5, 5);
-        for (Wall wall : walls) {
-            Rectangle wallRect = new Rectangle(wall.getX(), wall.getY(), 20, 20);
-            if (pebbleRect.intersects(wallRect)) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public boolean pebblesCollidesWithWall(Pebble pebble, List<Wall> walls) {
+		Rectangle pebbleRect = new Rectangle(pebble.getX(), pebble.getY(), 5, 5);
+		for (Wall wall : walls) {
+			Rectangle wallRect = new Rectangle(wall.getX(), wall.getY(), wall.getWidth(), wall.getHeight());
+			if (pebbleRect.intersects(wallRect)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-         public void bouncePebble(Pebble pebble, ArrayList<Wall> walls) {
-        if (pebblesCollidesWithWall(pebble, walls)) {
-            // Check which sides of the pebble the walls are on to determine how to bounce
-            int futureX = pebble.getX() + pebble.getVx();
-            int futureY = pebble.getY() + pebble.getVy();
+        	public void bouncePebble(Pebble pebble, ArrayList<Wall> walls) {
+		if(pebble.getVx()!=0 || pebble.getVy() != 0) {
+		if (pebblesCollidesWithWall(pebble, walls)) {
+			System.out.println("hitWall!");
+			Pebble upPebble = new Pebble(pebble.getX(), pebble.getY()-5, pebble.getVx(),pebble.getVy());
+			Pebble downPebble = new Pebble(pebble.getX(), pebble.getY()+5, pebble.getVx(),pebble.getVy());
+			Pebble leftPebble = new Pebble(pebble.getX()-5, pebble.getY(), pebble.getVx(),pebble.getVy());
+			Pebble rightPebble = new Pebble(pebble.getX()+5, pebble.getY(), pebble.getVx(),pebble.getVy());
 
-            // Check vertical walls
-            if (pebblesCollidesWithWall(new Pebble(futureX, pebble.getY(), pebble.getVx(), pebble.getVy()), walls)) {
-                pebble.setVx(-pebble.getVx()); // Reverse horizontal velocity
-            }
+			// Check horizontal walls
+			if ((pebblesCollidesWithWall(upPebble, walls)&&!pebblesCollidesWithWall(downPebble, walls))||(pebblesCollidesWithWall(downPebble, walls)&&!pebblesCollidesWithWall(upPebble, walls))) {
+				if((pebblesCollidesWithWall(leftPebble, walls)&&!pebblesCollidesWithWall(rightPebble, walls))||(pebblesCollidesWithWall(rightPebble, walls)&&!pebblesCollidesWithWall(leftPebble, walls))) {
+					pebble.setVx(-pebble.getVx());
+					pebble.setVy(-pebble.getVy());
+				}else {
+				pebble.setVx(-pebble.getVx()); // Reverse horizontal velocity
+			}
+			}
 
-            // Check horizontal walls (top or bottom collision)
-            if (pebblesCollidesWithWall(new Pebble(pebble.getX(), futureY, pebble.getVx(), pebble.getVy()), walls)) {
-                pebble.setVy(-pebble.getVy()); // Reverse vertical velocity
-            }
-        }
-    }
+			// Check vertical walls
+			if ((pebblesCollidesWithWall(leftPebble, walls)&&!pebblesCollidesWithWall(rightPebble, walls))||(pebblesCollidesWithWall(rightPebble, walls)&&!pebblesCollidesWithWall(leftPebble, walls))) {
+				if ((pebblesCollidesWithWall(upPebble, walls)&&!pebblesCollidesWithWall(downPebble, walls))||(pebblesCollidesWithWall(downPebble, walls)&&!pebblesCollidesWithWall(upPebble, walls))) {
+					pebble.setVx(-pebble.getVx());
+					pebble.setVy(-pebble.getVy());
+				}else {
+				pebble.setVy(-pebble.getVy()); // Reverse vertical velocity
+			}
+			}
+			
+			
+		}
+	}
+	}
 
         private void updateShootingPebbles() {
         // Update positions of all shooting pebbles
@@ -569,7 +608,11 @@ public class GameBoard extends JPanel implements KeyListener {
 		} else if (down) {
 			players.get(0).moveDown(walls);
 		}
-		camera.update(players.get(0));
+		camera1.update(players.get(0));
+		if(players.get(0).getIfEat() == true) {
+			TotalPoints += 10;
+			scoreLabel.setText("Score: " + TotalPoints);
+		}
 
 		// Shooting pebbles
 		if (key == KeyEvent.VK_SPACE) {
@@ -627,7 +670,11 @@ public class GameBoard extends JPanel implements KeyListener {
 			} else if (down2) {
 				players.get(1).moveDown(walls);
 			}
-			camera.update(players.get(0));
+			camera2.update(players.get(1));
+			if(players.get(1).getIfEat() == true) {
+				TotalPoints += 10;
+				scoreLabel.setText("Score: " + TotalPoints);
+			}
 			
 			if (key == KeyEvent.VK_E) {
 				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
