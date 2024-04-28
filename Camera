@@ -32,11 +32,7 @@ public class Camera {
         	y = 600 - height;
         }
     }
-    
-    public void applyGraphicsTransformations(Graphics g) {
-        g.clipRect(x, y, width, height);
-        g.translate(-x, -y);
-    }
+
     
 	public int getX() {
 		return x;
@@ -44,6 +40,14 @@ public class Camera {
 
 	public int getY() {
 		return y;
+	}
+	
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 
 }
