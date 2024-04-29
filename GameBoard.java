@@ -29,8 +29,10 @@ public class GameBoard extends JPanel implements KeyListener {
     private Camera camera1;
     private Camera camera2;
     private boolean PowerOn;
-    private int TotalPoints;
+    private int Point1;
+    private int Point2;
     private JLabel scoreLabel;
+    private boolean isGameOver;
 
 
     public GameBoard(boolean isSinglePlayer) {
@@ -142,7 +144,9 @@ public class GameBoard extends JPanel implements KeyListener {
 	camera1 = new Camera(0, 0, 120, 120);
 	camera2 = new Camera(0, 0, 220, 120);
 	PowerOn = false;
-	TotalPoints = 0;
+	Point1 = 0;
+	Point2 = 0;
+	isGameOver = false;
 
         generateWalls();
 
@@ -343,14 +347,30 @@ public class GameBoard extends JPanel implements KeyListener {
     private void checkCollisionWithGhosts(StarMan player) {
         Rectangle playerRect = new Rectangle(player.getX(), player.getY(), (int)player.getSize(), (int)player.getSize());
         for (Ghost ghost : ghosts) {
-            Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 20, 20); // Assuming the size of the ghost is 20
+            Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 30, 30);
             if (playerRect.intersects(ghostRect)) {
+		if (!isGameOver) { 
 		JFrame gameFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
                 new EndScreen(gameFrame, isSinglePlayer);
-                break;
-            }
-        }
-    }
+	            isGameOver = true;
+	            break;
+			}
+		}
+	}
+	}
+
+		private void drawScore(Graphics g, Camera camera) {
+	    g.setColor(Color.WHITE); // Set the color for the score text
+	    g.setFont(new Font("Serif", Font.BOLD, 13)); // Set the font for the score
+	    // Calculate position to draw the score on top center of the camera view
+	    int x = camera.getX() + camera.getWidth() / 2 - 50;
+	    int y = camera.getY() + 20;
+	    if (camera == camera1){
+		    g.drawString("P1 Score: " + Point1, x, y);
+	    }else if (camera == camera2){
+	    g.drawString("P2 Score: " + Point2, x, y);
+	}
+	}
 
     public void startGame() {
         new Timer(100, e -> {
@@ -361,15 +381,24 @@ public class GameBoard extends JPanel implements KeyListener {
             for (Ghost ghost : ghosts) {
                 ghost.moveRandomly(walls);
             }
-            for (Pebble pebble : pebbles) {
-                pebble.updatePosition();
-            }
+		
+			for (Pebble pebble : pebbles) {
+				if (!(pebble.getX()<0||pebble.getX()>800||pebble.getY()<0||pebble.getY()>620)) {
+				pebble.updatePosition();
+			}
+			}
 
             for (StarMan player : players) {
                 hitGhost(player.getShootingPebble());
             }
-            for (Ghost ghost : ghosts) {
-                ghost.updateBlink();  }
+		
+		for (StarMan player : players) {
+				hitGhost(player.getShootingPebble());
+				checkCollisionWithGhosts(player); }
+
+		for (Ghost ghost : ghosts) {
+				ghost.updateBlinking();
+			}
             
             
             updatePebbles();
@@ -466,6 +495,10 @@ public class GameBoard extends JPanel implements KeyListener {
             g.fillOval(lavaBlock.getX() + 12, lavaBlock.getY() + 15, 5, 5);
 
         }
+	drawScore(g, camera1);
+		    if (!isSinglePlayer) {
+		        drawScore(g, camera2);
+		    }
     }
 
      public void updatePebbles() {
@@ -484,9 +517,9 @@ public class GameBoard extends JPanel implements KeyListener {
             Iterator<Ghost> ghostIterator = ghosts.iterator();
             boolean hitDetected = false;
             
-            while (ghostIterator.hasNext()) {
+		while (ghostIterator.hasNext()&& !hitDetected) {
                 Ghost ghost = ghostIterator.next();
-                Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 40, 40);
+                Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 30, 30);
                 
                 if(pebbleRect.intersects(ghostRect)) {
                     ghost.hit();
@@ -496,8 +529,8 @@ public class GameBoard extends JPanel implements KeyListener {
                     }
                     
                 }
-            }if(hitDetected) {
-            	pebbleIterator.remove();
+            }	if (hitDetected||pebble.getX()<0||pebble.getX()>800||pebble.getY()<0||pebble.getY()>620) {
+		pebbleIterator.remove();
             }
         }
     }
@@ -562,7 +595,7 @@ public class GameBoard extends JPanel implements KeyListener {
     }
     
     public void actionPerformed(ActionEvent e) {
-        hitGhost(pebbles);
+        // hitGhost(pebbles);
         updateShootingPebbles();
 //	camera.update(players.get(0));
         repaint();
@@ -610,15 +643,15 @@ public class GameBoard extends JPanel implements KeyListener {
 		}
 		camera1.update(players.get(0));
 		if(players.get(0).getIfEat() == true) {
-			TotalPoints += 10;
-			scoreLabel.setText("Score: " + TotalPoints);
+			Point1 += 10;
+			scoreLabel.setText("P1 Score: " + Point1);
 		}
 
 		// Shooting pebbles
 		if (key == KeyEvent.VK_SPACE) {
 			if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 				players.get(0).shootPebble();
-				hitGhost(pebbles);
+				hitGhost(players.get(0).getShootingPebble());
 				updateShootingPebbles();
 			}
 		}
@@ -672,14 +705,14 @@ public class GameBoard extends JPanel implements KeyListener {
 			}
 			camera2.update(players.get(1));
 			if(players.get(1).getIfEat() == true) {
-				TotalPoints += 10;
-				scoreLabel.setText("Score: " + TotalPoints);
+				Point2 += 10;
+				scoreLabel.setText("P2 Score: " + Point2);
 			}
 			
 			if (key == KeyEvent.VK_E) {
 				if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 					players.get(1).shootPebble();
-					hitGhost(pebbles);
+					hitGhost(players.get(1).getShootingPebble());
 					updateShootingPebbles();
 				}
 			}
