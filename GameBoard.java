@@ -101,8 +101,8 @@ public class GameBoard extends JPanel implements KeyListener {
             int y = rand.nextInt(maxY - minY + 1) + minY;
 
             // Ensure that the rocket block position does not overlap with existing blocks
-            if (!isPositionOccupied(x, y, rocketBlocks, lavaBlocks, walls)) {
-                lavaBlocks.add(new LavaBlock(x, y));
+			if (!isPositionOccupied(x, y, rocketBlocks, lavaBlocks, walls)) {
+				lavaBlocks.add(new LavaBlock(x, y));
             } else {
                 i--; // Decrement to retry the placement
             }
@@ -306,11 +306,14 @@ public class GameBoard extends JPanel implements KeyListener {
         for (int i = 0; i < numFruits; i++) {
             int x = rand.nextInt(maxX - minX + 1) + minX;
             int y = rand.nextInt(maxY - minY + 1) + minY;
+            String[] fruitType = {"Strawberry", "Blueberry", "Mulberry"};
+            Random random = new Random();
+            int index = random.nextInt(fruitType.length);
 
             // ensure that the rocket block position does not overlap with existing blocks
             if (!isPositionOccupied(x, y, rocketBlocks, lavaBlocks, walls)) {
-                fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Strawberry"));
-                fruits.add(new Fruit(rand.nextInt(800), rand.nextInt(600), "Blueberry"));
+                fruits.add(new Fruit(x,y, fruitType[index]));
+                System.out.println("Added fruit: " + fruitType[index] + " at (" + x + ", " + y + ")");
             } else {
                 i--; 
             }
@@ -331,6 +334,46 @@ public class GameBoard extends JPanel implements KeyListener {
             }
         }
     }
+		private void checkFruitInteraction(StarMan player) {
+		for (Iterator<Fruit> it = fruits.iterator(); it.hasNext();) {
+			Fruit fruit = it.next();
+			
+			if (player.getX() == fruit.getX() && player.getY() == fruit.getY()) {
+				if (fruit.getType().equals("Blueberry")) {
+					if(player == players.get(0)) {
+					Point1 += 50;
+					}else if(player == players.get(1)) {
+						Point2 +=50;
+					}
+				
+					PowerOn = true;
+					Timer timer = new Timer(15000, new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							PowerOn = false;
+							((Timer) e.getSource()).stop();
+						}
+					});
+					eatGhost(player);
+					timer.setRepeats(false);
+					timer.start();
+				} else if (fruit.getType().equals("Mulberry")) {
+					if(player == players.get(0)) {
+					Point1 += 100;
+					}else if(player == players.get(1)) {
+						Point2 +=100;
+					}
+				} else if (fruit.getType().equals("Strawberry")) {
+					if(player == players.get(0)) {
+					Point1 += 500;
+					}else if(player == players.get(1)) {
+						Point2 += 500;
+					}
+				}
+				it.remove();
+				break;
+			}
+		}
+	}
 
     private void checkLavaBlockInteraction(StarMan player) {
         Rectangle playerRect = new Rectangle(player.getX(), player.getY(), (int)player.getSize(), (int)player.getSize());
@@ -352,6 +395,34 @@ public class GameBoard extends JPanel implements KeyListener {
 		if (!isGameOver) { 
 		JFrame gameFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
                 new EndScreen(gameFrame, isSinglePlayer);
+	            isGameOver = true;
+	            break;
+			}
+		}
+	}
+	}
+		private void eatGhost(StarMan player) {
+		Rectangle playerRect = new Rectangle(player.getX(), player.getY(), (int) player.getSize(),
+				(int) player.getSize());
+		Iterator<Ghost> ghostIterator = ghosts.iterator();
+		while (ghostIterator.hasNext()) {
+			Ghost ghost = ghostIterator.next();
+			Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 30, 30);
+			if (playerRect.intersects(ghostRect)) {
+				ghostIterator.remove();
+				break;
+			}
+			}
+		}
+		private void checkCollisionWithGhosts(StarMan player) {
+		Rectangle playerRect = new Rectangle(player.getX(), player.getY(), (int) player.getSize(),
+				(int) player.getSize());
+		for (Ghost ghost : ghosts) {
+			Rectangle ghostRect = new Rectangle(ghost.getX(), ghost.getY(), 30, 30); 
+			if (playerRect.intersects(ghostRect)) {
+	            if (!isGameOver) { 
+				JFrame gameFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+				new EndScreen(gameFrame, isSinglePlayer);
 	            isGameOver = true;
 	            break;
 			}
@@ -438,14 +509,16 @@ public class GameBoard extends JPanel implements KeyListener {
 
 
         // Draw all fruits
-        for (Fruit fruit : fruits) {
-            if (fruit.getType().equals("Strawberry")) {
-                g.setColor(Color.RED);
-            } else {
-                g.setColor(Color.BLUE);
-            }
-            g.fillOval(fruit.getX(), fruit.getY(), 10, 10);
-        }
+			for (Fruit fruit : fruits) {
+				if (fruit.getType().equals("Strawberry")) {
+					g.setColor(Color.RED);
+				} else if (fruit.getType().equals("Blueberry")) {
+					g.setColor(Color.BLUE);
+				}else if (fruit.getType().equals("Mulberry")) {
+					g.setColor(Color.GREEN);
+				}
+				g.fillOval(fruit.getX(), fruit.getY(), 10, 10);
+			}
 
         // Draw all ghosts
         for (Ghost ghost : ghosts) {
@@ -597,7 +670,6 @@ public class GameBoard extends JPanel implements KeyListener {
     public void actionPerformed(ActionEvent e) {
         // hitGhost(pebbles);
         updateShootingPebbles();
-//	camera.update(players.get(0));
         repaint();
     }
 		@Override
@@ -721,10 +793,12 @@ public class GameBoard extends JPanel implements KeyListener {
 
         checkRocketBlockInteraction(player1);
         checkLavaBlockInteraction(player1);
+	checkFruitInteraction(player1);
 
         if (player2 != null) {
             checkRocketBlockInteraction(player2);
             checkLavaBlockInteraction(player2);
+	checkFruitInteraction(player2);
         }
 
         repaint();
